@@ -1,10 +1,13 @@
+include <libraries/OpenSCAD-Arduino-Mounting-Library/arduino.scad>
+
+
 thickness = 10;
 
 width = 200;
 depth = 300;
 
 wheel_diameter = 100;
-wheel_y_offset = wheel_diameter / 2;
+wheel_y_offset = wheel_diameter / 2 + 50;
 wheel_z_offset = -28;
 
 brush_holder_x_offset = 10;
@@ -55,7 +58,7 @@ module motorR835() {
 
 
 module motorHolder() {
-    //translate([width / 2 + thickness, depth / 2 + thickness, 0]) motorR835();
+    translate([width / 2 + thickness, depth / 2 + thickness, 0]) motorR835();
     
     thickness = 2;
     width = 40;
@@ -114,6 +117,72 @@ module brush() {
     }
 }
 
+module brushConnector() {
+    diameter = 20;
+    hole_diameter = 6;
+    motor_axis_length = 15;
+    
+    screw_diameter = 3.3;
+    screw_offset = 20;
+    
+    brush_inner_diameter = 11;
+    brush_length = 20;
+    
+    
+    difference() {
+        cylinder(d=diameter, motor_axis_length, center=true);
+        cylinder(d=hole_diameter, motor_axis_length, center=true);
+
+        // motor connector screw
+        translate([-diameter/3, diameter/3, 0]) rotate([90, 0, 45]) cylinder(d=screw_diameter, diameter, center=true);
+    }
+    
+    translate([0, 0, motor_axis_length / 2 + brush_length / 2]) difference() {
+        cylinder(d=diameter, brush_length, center=true);
+        cylinder(d=brush_inner_diameter, brush_length, center=true);
+        // motor connector screw
+        translate([-diameter/3, diameter/3, 3]) rotate([90, 0, 45]) cylinder(d=screw_diameter, diameter, center=true);
+    }
+}
+//brushConnector();
+
+module side() {
+    width = 2;
+    depth = 198;
+    height = 60;
+    connect_holes_diameter = 3;
+    led_diameter = 5;
+    cable_diameter = 10;
+    
+    difference() {
+        translate([0, 1, 0]) cube([width, depth, height]);
+        
+        // mount holes
+        translate([0, 25, connect_holes_diameter / 2 + 1]) rotate([0, 90, 0]) cylinder(d=connect_holes_diameter, width);
+        translate([0, 75, connect_holes_diameter / 2 + 1]) rotate([0, 90, 0]) cylinder(d=connect_holes_diameter, width);
+        translate([0, 125, connect_holes_diameter / 2 + 1]) rotate([0, 90, 0]) cylinder(d=connect_holes_diameter, width);
+        translate([0, 175, connect_holes_diameter / 2 + 1]) rotate([0, 90, 0]) cylinder(d=connect_holes_diameter, width);
+        
+        // leds
+        translate([0, 50, 50]) rotate([0, 90, 0]) cylinder(d=led_diameter, width);
+        translate([0, 150, 50]) rotate([0, 90, 0]) cylinder(d=led_diameter, width);
+        
+        // cable hole
+        translate([0, 100, 15]) rotate([0, 90, 0]) cylinder(d=cable_diameter, width);
+    }
+}
+
+//side();
+
+module sideEdges() {
+    difference() {
+        cube([10, 10, 55]);
+        translate([6.8, 0, 0]) cube([2.5, 6.5, 55]);
+        translate([0, 6.8, 0]) cube([6.5, 2.5, 55]);
+    }
+}
+//sideEdges();
+
 module backplate() {
     width = 200;
     depth = 200;
@@ -148,6 +217,7 @@ module backplate() {
             translate([125, depth / 2, 0]) cylinder(d=cable_hole_diameter, thickness);
             
             
+            // plate connection holes
             for (z_rotate = [0: 90: 360]) {
                 translate([width / 2, depth / 2, 0]) rotate([0, 0, z_rotate]) translate([- 3 * width / 8, depth / 2 - thickness, thickness + connect_holes_diameter / 2 + 1]) rotate([-90, 0, 0]) cylinder(d=connect_holes_diameter, thickness);
                 translate([width / 2, depth / 2, 0]) rotate([0, 0, z_rotate]) translate([- 1 * width / 8, depth / 2 - thickness, thickness + connect_holes_diameter / 2 + 1]) rotate([-90, 0, 0]) cylinder(d=connect_holes_diameter, thickness);
@@ -155,7 +225,17 @@ module backplate() {
                 translate([width / 2, depth / 2, 0]) rotate([0, 0, z_rotate]) translate([3 * width / 8, depth / 2 - thickness, thickness + connect_holes_diameter / 2 + 1]) rotate([-90, 0, 0]) cylinder(d=connect_holes_diameter, thickness);
             }
 
+            // electronic
+            translate([10, 10, 0]) translate([10, 10, 0]) cylinder(d=3, 3);
+            translate([10, 10, 0]) translate([170, 10, 0]) cylinder(d=3, 3);
+            translate([10, 10, 0]) translate([170, 120, 0]) cylinder(d=3, 3);
+            translate([10, 10, 0]) translate([10, 120, 0]) cylinder(d=3, 3);
             
+            // layer mounting
+            translate([5, 5, 0]) cylinder(d=3, 3);
+            translate([195, 5, 0]) cylinder(d=3, 3);
+            translate([195, 195, 0]) cylinder(d=3, 3);
+            translate([5, 195, 0]) cylinder(d=3, 3);
         }
     }
 }
@@ -184,7 +264,7 @@ module frontplate() {
     color("green", 1) {
         difference() {
             cube([width, depth, thickness + border_height]);
-            translate([arm_width, width_part_depth, 0]) cube([width, depth, thickness + border_height]);
+            translate([arm_width, width_part_depth, -1]) cube([width, depth, thickness + border_height + 2]);
             translate([thickness, thickness, thickness]) cube([width - 2 * thickness, width_part_depth - 2 * thickness, border_height]);
             translate([thickness, thickness, thickness]) cube([arm_width - 2 * thickness, depth - 2 * thickness, border_height]);
             //translate([width - arm_width + thickness, thickness, thickness]) cube([arm_width - 2 * thickness, depth - 2 * thickness, border_height]);
@@ -212,7 +292,7 @@ module frontplate() {
 
 
 module wheels_connector() {
-    diameter = 60;
+    diameter = 50;
     hole_diameter = 6;
     motor_axis_length = 15;
     
@@ -236,28 +316,118 @@ module wheels_connector() {
     
 }
 
-wheels_connector();
+//wheels_connector();
 
 module wheels() {
-    diameter = 170;
-    thickness = 5; //7;
+    diameter = 150; //  170;
+    thickness = 7;
+    
+    border_thickness = 10;
+    thickness_inner = 3;
+    
+    wheel_profile_diameter = 4;
     
     screw_diameter = 4;
     screw_offset = 20;
     
     difference() {
         cylinder(d=diameter, thickness, center=true);
+        translate([0, 0, thickness_inner]) cylinder(d=diameter-border_thickness, thickness-thickness_inner, center=true);
         for (z_rotate = [0: 90: 360]) {
             rotate([0, 0, z_rotate]) translate([screw_offset, 0, 0]) cylinder(d=screw_diameter, thickness, center=true);
+        }
+        for (z_rotate = [0: 4: 360]) {
+            rotate([0, 0, z_rotate]) translate([diameter/2, 0, 0]) cylinder(d=wheel_profile_diameter, thickness, center=true);
         }
     }
     
 }
 //wheels();
 
+module L298N() {
+    color("red", 1) {
+        difference() {
+            cube([42, 42, 2]);
+            translate([3, 3, 0]) cylinder(d=3, 2);
+            translate([39, 3, 0]) cylinder(d=3, 2);
+            translate([39, 39, 0]) cylinder(d=3, 2);
+            translate([3, 39, 0]) cylinder(d=3, 2);
+        }
+    }
+    color("black", 1) {
+        translate([0, 10, 0]) cube([16, 23, 25]);
+    }
+    
+}
+
+//L298N();
+
+module breadboard() {
+    offset = 5;
+    mountingHoleRadius = 3.2 / 2;
+    color("DarkGoldenrod", 1) difference() {
+        cube([140, 100, 2]);
+        
+        // mounting
+        translate([10 + offset, 55 + offset, 0]) cylinder(d=3, 2);
+        translate([100, 5, 0]) cylinder(d=3, 2);
+        translate([95, 97, 0]) cylinder(d=3, 2);
+        
+        // arduino
+        //translate([10, 60, 0]) rotate([0, 0, -90]) holePlacement(LEONARDO) cylinder(r = mountingHoleRadius, h = 2, $fn=32);
+        
+        // L298N
+        //translate([130, 55, 0]) rotate([0, 0, 180]) translate([3, 3, 0]) cylinder(d=3, 2);
+        //translate([130, 55, 0]) rotate([0, 0, 180]) translate([39, 3, 0]) cylinder(d=3, 2);
+        //translate([130, 55, 0]) rotate([0, 0, 180]) translate([39, 39, 0]) cylinder(d=3, 2);
+        //translate([130, 55, 0]) rotate([0, 0, 180]) translate([3, 39, 0]) cylinder(d=3, 2);
+    }
+}
+
+
+module electronic() {
+    difference() {
+        cube([180, 130, 2]);
+        
+        // breadboard mounting
+        offset = 5;
+        translate([20, 5, 0]) translate([10 + offset, 55 + offset, 0]) cylinder(d=3, 2);
+        translate([20, 5, 0]) translate([100, 5, 0]) cylinder(d=3, 2);
+        translate([20, 5, 0]) translate([95, 97, 0]) cylinder(d=3, 2);
+        
+        // mounting
+        translate([10, 10, 0]) cylinder(d=3, 5);
+        translate([170, 10, 0]) cylinder(d=3, 2);
+        translate([170, 120, 0]) cylinder(d=3, 2);
+        translate([10, 120, 0]) cylinder(d=3, 2);
+        
+        // cables
+        translate([10, 100, 0]) cylinder(d=10, 2);
+        translate([170, 100, 0]) cylinder(d=10, 2);
+        translate([30, 120, 0]) cylinder(d=10, 2);
+        translate([150, 120, 0]) cylinder(d=10, 2);
+    }
+    
+    translate([2, 2, 2]) difference() {
+        cube([176, 126, 3]);
+        translate([2, 2, 0]) cube([172, 122, 4]);
+    }
+    translate([20, 5, 4]) {
+        breadboard();
+        translate([10, 60, 3]) rotate([0, 0, -90]) arduino(LEONARDO);
+        
+        translate([130, 55, 3]) rotate([0, 0, 180]) L298N();
+    }    
+}
+
+//backplate();
+//translate([10, 10, 10]) electronic();
+
 module platform() {
     // base plate
     backplate();
+    translate([10, 10, 10]) electronic();
+    
     translate([0, 200, 0]) frontplate();
     
     // left motorHolder
@@ -267,16 +437,15 @@ module platform() {
     translate([200 - 58, -40 / 2 + 100 + 3, -2]) rotate([0, 90, 0]) motorHolder();
     
     // brush motorHolder
-    //translate([0, depth + brush_diameter / 2 + brush_holder_y_offset, -20]) rotate([180, 0, 0]) rotate([0, -90, 180]) motorHolder();
+    translate([0, 250, -3]) rotate([180, 0, 0]) rotate([0, -90, 180]) motorHolder();
 
     // wheels
     translate([-2 * thickness, wheel_y_offset, wheel_z_offset]) rotate([0, 90, 0]) cylinder(d=wheel_diameter, thickness);
     translate([width + thickness, wheel_y_offset, wheel_z_offset]) rotate([0, 90, 0]) cylinder(d=wheel_diameter, thickness);
 
     // brush
-    color("white", 0.4) {
-        translate([70, depth + brush_diameter / 2 + brush_holder_y_offset, -26]) rotate([0, 90, 0]) brush();
-    }
+    translate([70, 267, -31]) rotate([0, 90, 0]) brush();
+
 }
 
-//platform();
+platform();
